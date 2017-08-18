@@ -6,9 +6,10 @@ import (
 	"strings"
 )
 
-type PollRequest struct {
+// Request wraps up all information needed to answer a poll request
+type Request struct {
 	TeamId    string
-	ChannelId string
+	ChannelID string
 	Token     string
 	Message   string
 	Emojis    []string
@@ -16,11 +17,12 @@ type PollRequest struct {
 
 const (
 	back_tick          = "`"
-	error_wrong_format = `Wrong message format. Try this instead: ` + back_tick + `/poll \"What do you gys wanna grab for lunch?\" :pizza: :sushi:` + back_tick
+	Error_wrong_format = `Wrong message format. Try this instead: ` + back_tick + `/poll \"What do you gys wanna grab for lunch?\" :pizza: :sushi:` + back_tick
 )
 
-func NewPollRequest(u map[string][]string) (*PollRequest, error) {
-	p := &PollRequest{}
+// NewRequest validates the data in map and wraps it into a Request struct
+func NewRequest(u map[string][]string) (*Request, error) {
+	p := &Request{}
 	for key, values := range u {
 		switch key {
 		case "team_id":
@@ -28,7 +30,7 @@ func NewPollRequest(u map[string][]string) (*PollRequest, error) {
 				return nil, fmt.Errorf("Unexpected Error: TeamID in request is empty.")
 			}
 		case "channel_id":
-			if p.ChannelId = values[0]; len(p.ChannelId) == 0 {
+			if p.ChannelID = values[0]; len(p.ChannelID) == 0 {
 				return nil, fmt.Errorf("Unexpected Error: ChannelID in request is empty.")
 			}
 		case "token":
@@ -56,11 +58,11 @@ func parseText(text string) (string, []string, error) {
 	case '"':
 		re = regexp.MustCompile("\"([^\"]+)\"(.+)")
 	default:
-		return "", nil, fmt.Errorf(error_wrong_format)
+		return "", nil, fmt.Errorf(Error_wrong_format)
 	}
 	e := re.FindStringSubmatch(text)
 	if len(e) != 3 {
-		return "", nil, fmt.Errorf(error_wrong_format)
+		return "", nil, fmt.Errorf(Error_wrong_format)
 	}
 	var emojis []string
 	for _, v := range strings.Split(e[2], " ") {
@@ -68,7 +70,7 @@ func parseText(text string) (string, []string, error) {
 			continue
 		}
 		if len(v) < 3 || !strings.HasPrefix(v, ":") || !strings.HasSuffix(v, ":") {
-			return "", nil, fmt.Errorf(error_wrong_format, v)
+			return "", nil, fmt.Errorf(Error_wrong_format, v)
 		}
 		emojis = append(emojis, v[1:len(v)-1])
 	}

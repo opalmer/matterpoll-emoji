@@ -1,7 +1,8 @@
-package poll
+package poll_test
 
 import (
 	"fmt"
+	"github.com/kaakaa/matterpoll-emoji/poll"
 	"github.com/mattermost/platform/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,10 +38,10 @@ func TestCommand(t *testing.T) {
 		switch i {
 		// All correct
 		case 0:
-			payload = fmt.Sprintf("token=%s&user_id=%s&text=\"%s\"%s", Conf.Token, model.NewId(), test.Message, test.Emojis)
+			payload = fmt.Sprintf("token=%s&user_id=%s&text=\"%s\"%s", poll.C.Token, model.NewId(), test.Message, test.Emojis)
 		// Wrong message format
 		case 1:
-			payload = fmt.Sprintf("token=%s&user_id=%s&text=%s", Conf.Token, model.NewId(), test.Message)
+			payload = fmt.Sprintf("token=%s&user_id=%s&text=%s", poll.C.Token, model.NewId(), test.Message)
 		// Token missmatch
 		case 2:
 			payload = fmt.Sprintf("token=%s&user_id=%s&text=\"%s\"%s", model.NewId(), model.NewId(), test.Message, test.Emojis)
@@ -53,18 +54,18 @@ func TestCommand(t *testing.T) {
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 		recorder := httptest.NewRecorder()
-		PollCmd(recorder, r)
+		poll.Cmd(recorder, r)
 
 		response := model.CommandResponseFromJson(recorder.Result().Body)
 		require.NotNil(response)
-		assert.Equal(response.Username, RESPONSE_USERNAME)
-		assert.Equal(response.IconURL, RESPONSE_ICON_URL)
+		assert.Equal(response.Username, poll.RESPONSE_USERNAME)
+		assert.Equal(response.IconURL, poll.RESPONSE_ICON_URL)
 		if test.CorrectPoll {
 			assert.Equal(response.ResponseType, model.COMMAND_RESPONSE_TYPE_IN_CHANNEL)
 			assert.Equal(response.Text, test.Message+" #poll")
 		} else {
 			assert.Equal(response.ResponseType, model.COMMAND_RESPONSE_TYPE_EPHEMERAL)
-			assert.Equal(response.Text, error_wrong_format)
+			assert.Equal(response.Text, poll.Error_wrong_format)
 		}
 	}
 }
@@ -80,7 +81,7 @@ func TestHeader(t *testing.T) {
 	for i, test := range tests {
 		err := setConfig(test.Filename)
 		require.Nil(err)
-		payload := fmt.Sprintf("token=%s&user_id=%s&text=\"%s\"%s", Conf.Token, model.NewId(), test.Message, test.Emojis)
+		payload := fmt.Sprintf("token=%s&user_id=%s&text=\"%s\"%s", poll.C.Token, model.NewId(), test.Message, test.Emojis)
 		reader := strings.NewReader(payload)
 		switch i {
 		case 0:
@@ -89,7 +90,7 @@ func TestHeader(t *testing.T) {
 			require.NotNil(r)
 
 			recorder := httptest.NewRecorder()
-			PollCmd(recorder, r)
+			poll.Cmd(recorder, r)
 			assert.Equal(recorder.Code, http.StatusUnsupportedMediaType)
 		}
 	}
@@ -110,7 +111,7 @@ func TestURLFormat(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	recorder := httptest.NewRecorder()
-	PollCmd(recorder, r)
+	poll.Cmd(recorder, r)
 	assert.Equal(recorder.Code, http.StatusBadRequest)
 }
 
@@ -119,10 +120,10 @@ func setConfig(path string) (err error) {
 	if err != nil {
 		return
 	}
-	c, err := LoadConf(p)
+	c, err := poll.LoadConf(p)
 	if err != nil {
 		return
 	}
-	Conf = c
+	poll.C = c
 	return nil
 }

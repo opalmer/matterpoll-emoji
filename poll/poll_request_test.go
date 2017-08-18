@@ -1,6 +1,7 @@
-package poll
+package poll_test
 
 import (
+	"github.com/kaakaa/matterpoll-emoji/poll"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -11,7 +12,7 @@ func TestNewPollRequest(t *testing.T) {
 	require := require.New(t)
 	tests := []struct {
 		TeamId      string
-		ChannelId   string
+		ChannelID   string
 		Token       string
 		Text        string
 		Message     string
@@ -47,11 +48,11 @@ func TestNewPollRequest(t *testing.T) {
 	for _, test := range tests {
 		s := make(map[string][]string)
 		s["team_id"] = []string{test.TeamId}
-		s["channel_id"] = []string{test.ChannelId}
+		s["channel_id"] = []string{test.ChannelID}
 		s["token"] = []string{test.Token}
 		s["text"] = []string{test.Text}
 
-		p, err := NewPollRequest(s)
+		p, err := poll.NewRequest(s)
 		if test.ShouldError == true {
 			assert.NotNil(err)
 			assert.Nil(p)
@@ -60,7 +61,7 @@ func TestNewPollRequest(t *testing.T) {
 			require.NotNil(p)
 
 			assert.Equal(p.TeamId, test.TeamId)
-			assert.Equal(p.ChannelId, test.ChannelId)
+			assert.Equal(p.ChannelID, test.ChannelID)
 			assert.Equal(p.Token, test.Token)
 			assert.Equal(p.Message, test.Message)
 			assert.Equal(p.Emojis, test.Emojis)

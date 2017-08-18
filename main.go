@@ -19,8 +19,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	poll.Conf = c
-	http.HandleFunc("/poll", poll.PollCmd)
+	poll.C = c
+	http.HandleFunc("/poll", poll.Cmd)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil); err != nil {
 		log.Fatal(err)
 	}
